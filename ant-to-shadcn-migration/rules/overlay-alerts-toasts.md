@@ -81,3 +81,41 @@ toast.success('Saved', { description: 'Profile updated' })
 
 - Remove Ant CSS imports once overlays are migrated; avoid double-styling.
 - Check dark mode for alerts/toasts; ensure contrast and icon colors match tokens.
+
+### Before → After (Modal.confirm and notification)
+
+```tsx
+// Before (Ant)
+Modal.confirm({
+  title: 'Delete user?',
+  content: 'This cannot be undone.',
+  onOk: () => deleteUser(id),
+})
+notification.success({ message: 'Saved', description: 'Profile updated' })
+```
+
+```tsx
+// After (shadcn + sonner)
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
+
+export function DeleteUser({ onConfirm }: { onConfirm: () => Promise<void> }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger className="text-destructive">Delete</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete user?</AlertDialogTitle>
+          <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+toast.success('Saved', { description: 'Profile updated' })
+```

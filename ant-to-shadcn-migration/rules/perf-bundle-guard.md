@@ -17,6 +17,38 @@ Verify the new shadcn shell stays lean and responsive, and that legacy Ant code 
 - Images: ensure explicit sizes/aspect to prevent CLS; lazy load below the fold.
 - Mobile perf: test on mid-tier devices; watch for scroll jank on tables and drawers.
 
+### Quick examples
+
+**Avoid barrel imports and load heavy UI dynamically**
+```tsx
+// BAD: barrels + always-loaded heavy component
+import { HeavyChart } from '@/components'
+
+// GOOD: direct import + dynamic
+import dynamic from 'next/dynamic'
+const HeavyChart = dynamic(() => import('@/components/heavy-chart'), { ssr: false })
+```
+
+**Defer third-party analytics until after hydration**
+```tsx
+// BAD: loads on first render
+import 'third-party-analytics'
+
+// GOOD: defer to effect
+useEffect(() => {
+  import('third-party-analytics').then(mod => mod.init())
+}, [])
+```
+
+**Named lucide import**
+```tsx
+// BAD: import entire icon set
+import * as Icons from 'lucide-react'
+
+// GOOD: named import
+import { Check } from 'lucide-react'
+```
+
 ### Gotchas
 - Dynamic imports of legacy modules can reintroduce Ant CSS; check code-split chunks.
 - Avoid running heavy work on the client when it can stay on the server (App Router defaults). 

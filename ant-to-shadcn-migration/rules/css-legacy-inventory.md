@@ -66,3 +66,26 @@ Audit legacy global CSS/LESS and inline styles before introducing shadcn/Tailwin
 
 - Ant icon font: ensure it is removed when components are replaced; otherwise keep scoped to Ant routes.
 - LESS variables: note them for token mapping; remove LESS build steps when Ant usage ends.
+
+### Before → After (scoping legacy CSS)
+
+```css
+/* Before: global overrides leaking everywhere */
+.ant-btn {
+  border-radius: 2px !important;
+}
+.card {
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+```
+
+```css
+/* After: scoped and tokenized */
+.ant-app .ant-btn { border-radius: 2px; }
+:root { --shadow-card: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+```
+
+```tsx
+// After: shadcn card
+<Card className="shadow-[var(--shadow-card)]">...</Card>
+```

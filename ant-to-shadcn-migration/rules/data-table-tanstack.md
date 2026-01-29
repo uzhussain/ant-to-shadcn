@@ -90,3 +90,26 @@ return (
 
 - Ensure header cells are buttons for sortable columns with focus styles.
 - Test narrow viewports; consider responsive stacking for simple tables.
+
+### Before → After (Ant Table to shadcn + tanstack)
+
+```tsx
+// Before (Ant)
+<Table
+  columns={columns}
+  dataSource={data}
+  loading={loading}
+  pagination={{ current: page, pageSize, total, onChange: setPage }}
+/>
+```
+
+```tsx
+// After (tanstack + shadcn)
+const table = useReactTable({ data, columns, state: { pagination }, onPaginationChange: setPagination, getCoreRowModel: getCoreRowModel() })
+return (
+  <>
+    {loading ? <Skeleton className="h-24" /> : <DataTable table={table} />}
+    <Pager page={pagination.pageIndex + 1} pageCount={pageCount} onPageChange={(p) => setPagination({ ...pagination, pageIndex: p - 1 })} />
+  </>
+)
+```

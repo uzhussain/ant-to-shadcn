@@ -33,3 +33,24 @@ Legacy Ant scroll areas or section steppers can break after migration when effec
 
 - Avoid coupling scroll to changing function identities; memoize handlers.
 - When mixing legacy and new UI, ensure only one overlay/scroll layer sets `overflow`. 
+
+### Before → After (guarding initial setState)
+
+```tsx
+// Before: effect re-runs and resets state/scroll
+useEffect(() => {
+  setSlidingPagesConfigs(initialPageSettings)
+}, [getSelectedCustomForm])
+```
+
+```tsx
+// After: guard init + stable callback
+const initRef = useRef(false)
+const getSelectedCustomForm = useCallback(() => { /* ... */ }, [deps])
+
+useEffect(() => {
+  if (initRef.current) return
+  setSlidingPagesConfigs(initialPageSettings)
+  initRef.current = true
+}, [getSelectedCustomForm])
+```

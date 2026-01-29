@@ -63,3 +63,5 @@ Guidance and rule set to migrate Ant Design UIs (CRA/Vite/React) to shadcn/ui + 
 
 ### License
 MIT.
+
+For full skill details see ant-to-shadcn-migration/SKILL.md.

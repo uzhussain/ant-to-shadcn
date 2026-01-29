@@ -94,6 +94,45 @@ export function ProfileForm() {
 - `Form.Item help`, `validateStatus` → `FormMessage` + toasts for global errors.
 - `onFinish`/`onFinishFailed` → `handleSubmit` with try/catch.
 
+### Before → After (Ant Form to shadcn + RHF)
+
+```tsx
+// Before (Ant)
+<Form onFinish={onFinish}>
+  <Form.Item name="email" rules={[{ type: 'email', required: true }]}>
+    <Input placeholder="Email" />
+  </Form.Item>
+  <Form.Item>
+    <Button htmlType="submit" loading={saving}>Save</Button>
+  </Form.Item>
+</Form>
+```
+
+```tsx
+// After (shadcn + RHF)
+const form = useForm({ resolver: zodResolver(schema), defaultValues: { email: '' } })
+return (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email</FormLabel>
+            <FormControl><Input type="email" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <Button type="submit" disabled={form.formState.isSubmitting}>
+        {form.formState.isSubmitting ? 'Saving…' : 'Save'}
+      </Button>
+    </form>
+  </Form>
+)
+```
+
 ### Why this matters
 
 - Removes Ant form reliance; provides modern validation and better a11y defaults.

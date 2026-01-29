@@ -107,3 +107,24 @@ export function SaveButton() {
 - Ensure global CSS vars load before any component CSS; place in `globals.css`.
 - Watch z-index stacks: define z-index scale (modals, popovers, toasts) to prevent conflicts with legacy styles.
 - If Ant and shadcn coexist temporarily, scope legacy overrides to `.ant-` classes to avoid leaking onto shadcn components.
+
+### Before → After (tokens)
+
+```tsx
+// Before (Ant)
+<ConfigProvider theme={{ token: { colorPrimary: '#1677ff', borderRadius: 6 } }}>
+  <Button type="primary">Save</Button>
+</ConfigProvider>
+```
+
+```tsx
+// After (shadcn + Tailwind vars)
+// globals.css: define --color-primary, --radius
+// tailwind.config.js: map colors/radius to vars
+
+import { Button } from '@/components/ui/button'
+
+export function SaveButton() {
+  return <Button className="bg-primary text-white rounded-lg">Save</Button>
+}
+```
