@@ -1,10 +1,6 @@
 ---
 name: ant-to-shadcn-migration
-description: Migrate Ant Design UIs to shadcn/ui + Tailwind (React/CRA/Vite → Next.js App Router) with layout/page skeleton generation, component mapping, and aggressive legacy CSS cleanup guidance.
-license: MIT
-metadata:
-  author: community
-  version: "0.1.0"
+description: "Migrate Ant Design UIs to shadcn/ui + Tailwind (React/CRA/Vite → Next.js App Router). Use for: component replacement (no wrappers), Tailwind-first styling, canonical component consolidation, global CSS cleanup, route/layout scaffolding, and migration gotchas."
 ---
 
 # Ant Design to shadcn/ui Migration Guide
@@ -143,6 +139,7 @@ Run scans to route findings to rules:
 - `ConfigProvider`, `theme.useToken` → `theme-bridge`, `theme-dark-mode`, `css-layering`.
 - Global CSS/LESS (`*.less`, `global.css`, `index.css`) → `css-legacy-inventory`, `css-layering`, `css-asset-hygiene`.
 - Inline `style=` with Ant tokens → `theme-bridge`, `css-inline-cleanup`.
+- Duplicate/placeholder components/pages (`NewButton`, `NewPage`, `*V2`) → `gotchas-component-sprawl`.
 - `Layout.Sider`, `Menu`, `Breadcrumb` → `layout-shell`, `layout-nav`.
 - `Form`, `Form.Item`, `message`, `notification`, `Modal.confirm` → `forms-*`, `overlay-*`, `gotchas-ux-fallbacks`.
 - `Table`, `List`, `Descriptions`, `Tag`, `Badge`, `Empty` → `data-*`, `components-*` (pagination/result/empty), `data-table-tanstack`.
@@ -233,8 +230,9 @@ rg \"track|analytics|logEvent\" src app
 
 1) Run scans to inventory Ant usage, CSS/LESS, routes/roles, and inline styles.
 2) Apply rules by category (see `rules/`), starting with setup, CSS cleanup, theming, then layout/forms/data/overlays.
-3) Generate new App Router layouts/pages per route with shadcn skeletons; migrate features incrementally; keep Ant components only where not yet migrated (side-by-side strategy).
-4) Verify with the post-migration checklist; add visual/a11y snapshots where possible.
+3) Enforce component singularity: replace Ant components (no wrappers), squash custom duplicates into canonical shadcn components, and keep styling via variants/classes.
+4) Generate new App Router layouts/pages per route with shadcn skeletons; use clean naming, wire routes to nav/tests, and keep Ant only where not yet migrated (side-by-side strategy).
+5) Verify with the post-migration checklist; add visual/a11y snapshots where possible.
 
 ### Structure readiness check (reuse vs fresh scaffold)
 - Reuse existing structure if: routes/nav/breadcrumb data are centralized; CSS/LESS is scoped/minimal; assets/fonts are organized; guards/roles are discoverable and centralized.
