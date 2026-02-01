@@ -14,6 +14,7 @@ Create clean layout/page skeletons per route with shadcn primitives, mapping Ant
 1) Discover routes/roles:
 - Scan router config, menu definitions, guard HOCs/hooks (e.g., `RequireAuth`, `useAuth`), and permissions maps.
 - Extract: path, title, breadcrumb labels, required roles, nav grouping (sections).
+- Flag duplicate/placeholder routes (e.g., `NewPage`, `PageV2`) and identify the live path.
 
 2) Scaffold App Router structure:
 ```
@@ -30,6 +31,11 @@ app/
     error.tsx
     loading.tsx
 ```
+
+Naming rules:
+- Use consistent folder naming for routes (kebab-case).
+- Avoid “New*” or “*V2” route folders; rename to canonical routes before wiring nav/tests.
+- Ensure new routes are linked from nav/breadcrumbs and covered in smoke tests.
 
 3) Layout shell with shadcn primitives:
 ```tsx

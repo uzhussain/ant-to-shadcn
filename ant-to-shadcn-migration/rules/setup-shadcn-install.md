@@ -7,7 +7,7 @@ tags: setup, tailwind, shadcn, radix
 
 ## Install shadcn/ui and Tailwind
 
-Set the baseline stack before replacing Ant components.
+Set the baseline stack before replacing Ant components. Always follow the latest Tailwind practices for React and App Router (content paths, `globals.css` layering, and class-based styling over ad-hoc CSS).
 
 ### Steps
 
@@ -64,3 +64,4 @@ npx shadcn-ui@latest add button input textarea select checkbox radio-group switc
 
 - If CSS modules or legacy global styles exist, ensure `globals.css` loads after resets but before component CSS to control specificity.
 - Avoid mixing Ant and shadcn styles in the same component; isolate during transition. 
+- Do not wrap Ant components. Remove them and replace with shadcn equivalents, keeping the same data endpoints and flexible props.

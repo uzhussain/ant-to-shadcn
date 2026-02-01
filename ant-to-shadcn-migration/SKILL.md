@@ -43,7 +43,7 @@ Use the latest stable versions of:
 | 8        | Styling & CSS Cleanup               | MEDIUM   | `css-`          | 2     |
 | 9        | Accessibility, Responsiveness & Interop | MEDIUM | `a11y-`         | 4     |
 | 10       | Testing & Verification              | LOW      | `test-`         | 2     |
-| 11       | Common Gotchas                      | HIGH     | `gotchas-`      | 3     |
+| 11       | Common Gotchas                      | HIGH     | `gotchas-`      | 4     |
 
 ## Component Equivalence (Matrix)
 
@@ -226,7 +226,7 @@ rg \"track|analytics|logEvent\" src app
 - Accessibility/Responsive: `a11y-responsive-checks`, `a11y-motion-contrast`, `responsive-touch`, `rtl-l10n`
 - Performance: `perf-bundle-guard`
 - Testing: `test-visual-a11y`, `test-e2e-visual`
-- Gotchas: `gotchas-coexistence`, `gotchas-ux-fallbacks`, `gotchas-scroll-state`
+- Gotchas: `gotchas-coexistence`, `gotchas-ux-fallbacks`, `gotchas-scroll-state`, `gotchas-component-sprawl`
 - Other: `analytics-observability`
 
 ## How to Use

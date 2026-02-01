@@ -21,16 +21,21 @@ Audit legacy global CSS/LESS and inline styles before introducing shadcn/Tailwin
 - Migrate: layout/spacing overrides, components that map to shadcn.
 - Drop: unused resets, legacy grid, Ant theme overrides if not needed.
 
-3) Isolation strategy:
+3) Enforce a single global stylesheet:
+- Keep global resets/tokens only in `app/globals.css`.
+- Do not add new global CSS/LESS/SCSS files; merge stray globals into `globals.css`.
+- For page/component styling, prefer Tailwind classes or `cva` variants; use CSS modules only when Tailwind cannot express a behavior.
+
+4) Isolation strategy:
 - Scope legacy Ant overrides under `.ant-` prefixed containers where coexistence is required.
 - Move necessary globals into `app/globals.css` after Tailwind base but before component-level styles.
 - For pages still using Ant, lazy-load their CSS in route segments; do not import into root layout.
 
-4) Z-index and layers:
+5) Z-index and layers:
 - Define a z-index scale in `globals.css` or tokens (e.g., toast 40, tooltip 50, modal 60, drawer 70).
 - Replace ad-hoc `z-9999` with tokenized classes.
 
-5) Inline style cleanup:
+6) Inline style cleanup:
 - Replace inline sizes/margins/padding with Tailwind classes.
 - For dynamic widths/heights, use style vars (e.g., `style={{ '--col-span': 3 }}` with `grid` utilities) sparingly.
 
@@ -66,6 +71,7 @@ Audit legacy global CSS/LESS and inline styles before introducing shadcn/Tailwin
 
 - Ant icon font: ensure it is removed when components are replaced; otherwise keep scoped to Ant routes.
 - LESS variables: note them for token mapping; remove LESS build steps when Ant usage ends.
+- Multiple global stylesheets cause cascade fights; keep only `app/globals.css` and scope legacy CSS.
 
 ### Before → After (scoping legacy CSS)
 
