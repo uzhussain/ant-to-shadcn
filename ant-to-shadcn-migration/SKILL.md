@@ -1,11 +1,12 @@
 ---
 name: ant-to-shadcn-migration
 description: "Migrate Ant Design UIs to shadcn/ui + Tailwind (React/CRA/Vite → Next.js App Router). Use for: component replacement (no wrappers), Tailwind-first styling, canonical component consolidation, global CSS cleanup, route/layout scaffolding, and migration gotchas."
+metadata:
+  version: "1.0.0"
+  category: "migration"
 ---
 
 # Ant Design to shadcn/ui Migration Guide
-
-Comprehensive guide for migrating legacy Ant Design frontends to shadcn/ui + Tailwind (Radix under the hood), covering component equivalence, theming/tokens, layout/navigation, forms/tables, overlays/alerts, accessibility, and bundle-size cleanup. Targets React (CRA/Vite) apps moving to Next.js App Router, with patterns for running Ant and shadcn side-by-side during transition. Includes automated skeleton generation guidance for fresh layouts/pages with role-aware routing.
 
 ## When to Apply
 
@@ -25,95 +26,102 @@ Use the latest stable versions of:
 - `class-variance-authority`, `tailwind-merge`, `lucide-react`, `sonner`
 - `react-hook-form` ≥ 7.x and `zod` ≥ 3.x for forms (recommended)
 
-## Rule Categories by Priority
+## Rule Categories (by priority)
 
-| Priority | Category                            | Impact   | Prefix          | Rules |
-| -------- | ----------------------------------- | -------- | --------------- | ----- |
-| 1        | Setup & Dependencies                | CRITICAL | `setup-`        | 5     |
-| 2        | Design Tokens & Theming             | CRITICAL | `theme-`        | 2     |
-| 3        | Layout & Navigation (Responsive)    | HIGH     | `layout-`       | 3     |
-| 4        | Forms & Validation                  | HIGH     | `forms-`        | 3     |
-| 5        | Data Display (Tables/Lists)         | HIGH     | `data-`         | 2     |
-| 6        | Feedback & Overlays                 | HIGH     | `overlay-`      | 2     |
-| 7        | Content, Icons, Typography          | MEDIUM   | `content-`      | 1     |
-| 8        | Styling & CSS Cleanup               | MEDIUM   | `css-`          | 2     |
-| 9        | Accessibility, Responsiveness & Interop | MEDIUM | `a11y-`         | 4     |
-| 10       | Testing & Verification              | LOW      | `test-`         | 2     |
-| 11       | Common Gotchas                      | HIGH     | `gotchas-`      | 4     |
+Apply rules from `rules/` in this order: `setup-*` (critical) → `theme-*` (critical) → `layout-*` → `forms-*` → `data-*` → `overlay-*` → `content-*` → `css-*` → `a11y-*` → `test-*` → `gotchas-*`
 
-## Component Equivalence (Matrix)
+## Component Equivalence (Quick Reference)
 
-| Ant Design 6.x        | shadcn/ui + Tailwind (or pattern)                           | Notes |
-| --------------------- | ----------------------------------------------------------- | ----- |
-| Button                | `Button`, `ButtonGroup`                                     | |
-| FloatButton           | `Button` with fixed/absolute + shadow                       | |
-| Icon                  | `lucide-react`                                              | Drop Ant icons |
-| Typography            | Tailwind text utilities; `Typography` classes               | |
-| Divider               | `Separator`                                                 | |
-| Flex/Grid/Masonry     | Tailwind flex/grid; CSS masonry if needed                   | |
-| Layout, Space, Splitter| Tailwind stack/gap; custom splitter with `Resizable`        | |
-| Anchor                | `NavigationMenu`/`ScrollArea` or manual anchor links        | |
-| Breadcrumb            | `Breadcrumb`                                                | |
-| Dropdown              | `DropdownMenu`                                              | |
-| Menu                  | `NavigationMenu` or `Sheet` nav                             | |
-| Pagination            | `Pagination`                                                | |
-| Steps                 | Custom flex steps                                           | |
-| Tabs                  | `Tabs`                                                      | |
-| AutoComplete/Mentions | `Combobox`/`Command`                                        | |
-| Cascader/TreeSelect   | `Combobox` with grouped/indented options                    | |
-| Checkbox/Radio        | `Checkbox`, `RadioGroup`                                    | |
-| ColorPicker           | Custom popover + color input                                | |
-| DatePicker/TimePicker | `Calendar` + `Popover`, time input                          | |
-| Form/Form.Item        | `Form` (RHF) + shadcn fields                                | |
-| Input/InputNumber     | `Input` (number type), `InputGroup`                         | |
-| Rate                  | Custom star row using `Button`/`Toggle`                     | |
-| Select                | `Select` or `Combobox`                                      | |
-| Slider/Switch         | `Slider`, `Switch`                                          | |
-| Transfer              | Dual list with checkboxes and buttons                       | |
-| Upload                | File input + dropzone + progress                            | |
-| Avatar                | `Avatar`                                                    | |
-| Badge/Tag             | `Badge`                                                     | |
-| Calendar              | `Calendar`                                                  | |
-| Card                  | `Card`                                                      | |
-| Carousel              | `Carousel`                                                  | |
-| Collapse              | `Accordion`                                                 | |
-| Descriptions          | Definition list with grid/flex                              | |
-| Empty                 | `Empty` or custom empty block                               | |
-| Image                 | `img` with Tailwind classes                                 | |
-| List                  | Cards/grid/flex list                                        | |
-| Popover/Tooltip       | `Popover`, `Tooltip`                                        | |
-| QRCode                | Use QR library + `Card`                                     | |
-| Segmented             | `ToggleGroup`                                               | |
-| Statistic             | `Card` + text/metric styling                                | |
-| Table                 | tanstack + `Table`                                          | |
-| Timeline              | Custom vertical list with bullets                           | |
-| Tour                  | Custom popover walkthrough (command + popover)              | |
-| Tree                  | Indented list + checkboxes; virtualize if large             | |
-| Alert                 | `Alert`                                                     | |
-| Drawer                | `Sheet`                                                     | |
-| Message/Notification  | `toast`/`sonner`                                            | |
-| Modal/Popconfirm      | `Dialog` / `AlertDialog`                                    | |
-| Progress              | `Progress`                                                  | |
-| Result                | `Alert` success/error block                                 | |
-| Skeleton/Spin         | `Skeleton` or spinner utility                               | |
-| Watermark             | CSS background or canvas overlay                            | |
-| Affix                 | `sticky` positioning                                        | |
-| App/ConfigProvider/Util| Not needed; use shadcn/Tailwind tokens and providers       | |
-| Pro* (ProTable, etc.) | Compose with tanstack table + filters/forms + cards         | |
+**Direct replacements** (1:1 shadcn component exists):
+`Button`, `Breadcrumb`, `Tabs`, `Pagination`, `Checkbox`, `Select`, `Slider`, `Switch`, `Avatar`, `Badge`, `Card`, `Carousel`, `Calendar`, `Accordion` (Collapse), `Popover`, `Tooltip`, `Alert`, `Progress`, `Skeleton`, `Separator` (Divider), `Sheet` (Drawer), `Dialog`/`AlertDialog` (Modal/Popconfirm)
 
-### Notes on gaps
-- Rate: star toggles via `Button`/`Toggle`.
-- Transfer: dual list with checkboxes and CTA buttons.
-- QRCode: use a QR library; render inside `Card`.
-- Tour: custom step popovers anchored to elements.
-- Watermark: CSS `background-image` or canvas; keep scoped.
-- Affix: `position: sticky` on containers.
-- Tree: indented list; add virtualization for large sets.
-- Pro* suites: rebuild via tanstack table + forms + cards; no direct shadcn equivalent.
-- ConfigProvider/App/Util: not needed; use Tailwind/shadcn tokens and providers already configured.
-- Masonry: CSS columns or grid with `grid-auto-rows` + spans.
-- Statistic: simple text/number in `Card` with muted labels.
-- Shadcn-only (helpful replacements): `Command`/`Combobox` for search/select; `Sonner` for toasts; `Menubar`/`Sidebar` for complex nav; `Spinner` for lightweight loading; `Chart` (community/blocks) where Ant charts were used; `Input OTP` for code entry; `Field`/`Textarea` for richer forms.
+**Pattern-based replacements** (compose from shadcn + Tailwind):
+
+| Ant Design             | shadcn/ui + Tailwind pattern                                |
+| ---------------------- | ----------------------------------------------------------- |
+| Icon                   | `lucide-react` (drop `@ant-design/icons`)                   |
+| Layout/Space/Flex/Grid | Tailwind flex/grid utilities; `Resizable` for splitters     |
+| Menu/Dropdown          | `NavigationMenu`, `DropdownMenu`, or `Sheet` nav            |
+| Form/Form.Item         | `Form` (react-hook-form + zod) + shadcn field components    |
+| DatePicker/TimePicker  | `Calendar` + `Popover` + time input                         |
+| AutoComplete/Cascader  | `Combobox`/`Command` with grouped options                   |
+| Table                  | TanStack Table + shadcn `Table`                             |
+| Message/Notification   | `sonner` toasts                                             |
+| Upload                 | File input + dropzone + progress bar                        |
+| Steps/Timeline         | Custom flex/vertical list with Tailwind                     |
+| ConfigProvider/App     | Not needed — use Tailwind theme tokens + CSS vars           |
+| Pro* (ProTable, etc.)  | Compose: TanStack Table + filters + forms + cards           |
+
+## Migration Examples (Before → After)
+
+### Form.Item → shadcn Form + react-hook-form + zod
+
+```tsx
+// BEFORE (Ant Design)
+<Form onFinish={onSubmit}>
+  <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+    <Input />
+  </Form.Item>
+  <Button type="primary" htmlType="submit">Submit</Button>
+</Form>
+
+// AFTER (shadcn/ui + react-hook-form + zod)
+const schema = z.object({ email: z.string().email() });
+const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)}>
+    <FormField control={form.control} name="email" render={({ field }) => (
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl><Input {...field} /></FormControl>
+        <FormMessage />
+      </FormItem>
+    )} />
+    <Button type="submit">Submit</Button>
+  </form>
+</Form>
+```
+
+### Modal.confirm → AlertDialog
+
+```tsx
+// BEFORE (Ant Design)
+Modal.confirm({
+  title: 'Delete item?',
+  content: 'This action cannot be undone.',
+  onOk: () => handleDelete(id),
+});
+
+// AFTER (shadcn/ui)
+<AlertDialog>
+  <AlertDialogTrigger asChild><Button variant="destructive">Delete</Button></AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete item?</AlertDialogTitle>
+      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={() => handleDelete(id)}>Delete</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### message.success → sonner toast
+
+```tsx
+// BEFORE (Ant Design)
+import { message } from 'antd';
+message.success('Record saved successfully');
+message.error('Failed to save record');
+
+// AFTER (sonner)
+import { toast } from 'sonner';
+toast.success('Record saved successfully');
+toast.error('Failed to save record');
+```
 
 ## Migration Order
 
@@ -132,71 +140,24 @@ Use the latest stable versions of:
 12) Observability: keep analytics/error logging when refactoring flows; don’t drop events when swapping notifications with toasts (`analytics-observability`).
 13) Scroll/State: guard useEffect/init to avoid state resets; use stable handlers and shadcn ScrollArea for section navigation (`gotchas-scroll-state`).
 
-## Scans and Mapping
+## Pre-Migration Scan
 
-Run scans to route findings to rules:
-- `antd` imports and package version → `setup-antd-upgrade`, `setup-`, `css-legacy`, `theme-bridge`, component mappings.
-- `ConfigProvider`, `theme.useToken` → `theme-bridge`, `theme-dark-mode`, `css-layering`.
-- Global CSS/LESS (`*.less`, `global.css`, `index.css`) → `css-legacy-inventory`, `css-layering`, `css-asset-hygiene`.
-- Inline `style=` with Ant tokens → `theme-bridge`, `css-inline-cleanup`.
-- Duplicate/placeholder components/pages (`NewButton`, `NewPage`, `*V2`) → `gotchas-component-sprawl`.
-- `Layout.Sider`, `Menu`, `Breadcrumb` → `layout-shell`, `layout-nav`.
-- `Form`, `Form.Item`, `message`, `notification`, `Modal.confirm` → `forms-*`, `overlay-*`, `gotchas-ux-fallbacks`.
-- `Table`, `List`, `Descriptions`, `Tag`, `Badge`, `Empty` → `data-*`, `components-*` (pagination/result/empty), `data-table-tanstack`.
-- Route configs/menus/guards → `layout-route-scaffold`, `layout-auth-discovery`, `gotchas-coexistence`.
-- Auth/roles (Clerk/Supabase/cookies/hooks), router guards, landing vs app shell → `layout-auth-discovery`.
-- `@ant-design/icons`, global Ant CSS, LESS files → `content-icons-typography`, `css-legacy-inventory`, `perf-bundle-guard`.
-- Dark-mode selectors or toggles → `theme-dark-mode-guardrails`.
-- Public assets references → `css-asset-hygiene`, `assets-images`.
-- Fonts → `fonts-setup`.
-- Scroll/section nav code → `gotchas-scroll-state`.
-- Reduced motion/contrast/focus → `a11y-motion-contrast`, `a11y-responsive-checks`, `responsive-touch`.
-- RTL/l10n → `rtl-l10n`.
-- Analytics/logging → `analytics-observability`.
+Run these commands to inventory Ant usage and route findings to the appropriate rule files in `rules/`:
 
-### Quick scan commands (adjust paths as needed)
 ```bash
-# Ant version
+# Core Ant usage → setup-*, theme-*, css-* rules
 npm ls antd
+rg "antd|@ant-design/icons|ConfigProvider|theme\.useToken" src app
 
-# Ant imports and icons
-rg \"antd\" src app
-rg \"@ant-design/icons\" src app
+# Imperative APIs → forms-*, overlay-*, gotchas-ux-fallbacks rules
+rg "Modal\.confirm|notification\.|message\." src app
 
-# ConfigProvider and tokens
-rg \"ConfigProvider\" src app
-rg \"theme\\.useToken\" src app
+# Styles/assets → css-legacy-inventory, css-asset-hygiene, fonts-setup rules
+rg --files -g"*.less" src app
+rg "global\.css|font-family|\.dark" src app
 
-# Ant imperative APIs
-rg \"Modal\\.confirm\" src app
-rg \"notification\\.\" src app
-rg \"message\\.\" src app
-
-# Table/columns
-rg \"columns\\s*=\\s*\\[\" src app
-
-# LESS and global CSS
-rg --files -g\"*.less\" src app
-rg \"global\\.css\" src app
-
-# Dark mode selectors
-rg \"\\.dark\" src app
-
-# Assets and fonts
-rg --files -g\"*.{png,jpg,jpeg,svg}\" public/ src app
-rg \"font-family\" src app
-
-# Responsive/touch/scroll
-rg \"overflow\" src app
-rg \"scrollIntoView\" src app
-
-# Routes/guards/menus
-rg \"<Router\" -g\"*.tsx\" src app
-rg \"RequireAuth|useAuth|Clerk|Supabase\" src app
-rg \"menu\" src app/components
-
-# Analytics/logging
-rg \"track|analytics|logEvent\" src app
+# Routing/auth → layout-*, gotchas-coexistence rules
+rg "RequireAuth|useAuth|Clerk|Supabase|<Router" src app
 ```
 
 ## Post-Migration Verification (UI-first)
@@ -209,37 +170,13 @@ rg \"track|analytics|logEvent\" src app
 - CSS sanity: no leaking global styles; no unexpected z-index overlaps; Ant CSS isolated or removed; legacy UI parked separately.
 - Performance: bundle size reduced (no Ant CSS), tree-shaking verified.
 
-## Rule Index (by prefix)
+## Rules Reference
 
-- Setup: `setup-antd-upgrade`, `setup-shadcn-install`, `setup-shadcn-mcp`, `setup-legacy-parking`, `build-env`
-- Theme: `theme-bridge-tokens`, `theme-dark-mode-guardrails`
-- Layout: `layout-route-scaffold`, `layout-responsive-shell`, `layout-auth-discovery`
-- Forms: `forms-rhf-shadcn`, `forms-api-states`, `forms-select-date-upload`
-- Data: `data-tables-state`, `data-table-tanstack`, `components-pagination`, `components-result-empty`
-- Overlays: `overlay-alerts-toasts`, `overlay-toast-console`
-- Components (augment data/overlay): `components-tabs-steps`, `components-tree-cascader`, `components-upload`, `components-pagination`, `components-result-empty`
-- Content: `content-icons-typography`
-- Styling: `css-legacy-inventory`, `css-asset-hygiene`, `assets-images`, `fonts-setup`
-- Accessibility/Responsive: `a11y-responsive-checks`, `a11y-motion-contrast`, `responsive-touch`, `rtl-l10n`
-- Performance: `perf-bundle-guard`
-- Testing: `test-visual-a11y`, `test-e2e-visual`
-- Gotchas: `gotchas-coexistence`, `gotchas-ux-fallbacks`, `gotchas-scroll-state`, `gotchas-component-sprawl`
-- Other: `analytics-observability`
+All detailed migration rules are in `rules/` — each file is named by its prefix (e.g., `rules/setup-antd-upgrade.md`, `rules/forms-rhf-shadcn.md`). See the Rule Categories section above for application order.
 
-## How to Use
+## Key Principles
 
-1) Run scans to inventory Ant usage, CSS/LESS, routes/roles, and inline styles.
-2) Apply rules by category (see `rules/`), starting with setup, CSS cleanup, theming, then layout/forms/data/overlays.
-3) Enforce component singularity: replace Ant components (no wrappers), squash custom duplicates into canonical shadcn components, and keep styling via variants/classes.
-4) Generate new App Router layouts/pages per route with shadcn skeletons; use clean naming, wire routes to nav/tests, and keep Ant only where not yet migrated (side-by-side strategy).
-5) Verify with the post-migration checklist; add visual/a11y snapshots where possible.
-
-### Structure readiness check (reuse vs fresh scaffold)
-- Reuse existing structure if: routes/nav/breadcrumb data are centralized; CSS/LESS is scoped/minimal; assets/fonts are organized; guards/roles are discoverable and centralized.
-- Fresh scaffold if: routing/layouts are unclear, Ant CSS bleeds globally, assets/styles are scattered, or guards/roles are ad-hoc.
-- Always run scans first (antd imports, ConfigProvider, LESS, icons, overflow/scroll, assets/fonts, routes/guards, analytics) to inform the choice.
-
-### Component sourcing (shadcn-first)
-- Install components via shadcn CLI/MCP (registry) only; do not hand-roll replacements if a shadcn component/block exists.
-- Prefer shadcn MCP for updated patterns/blocks; avoid custom ad-hoc builds unless the component does not exist in the registry.
-- Keep installs tracked in `components.json` and use `npx shadcn@latest` for additions.
+- **No wrappers**: Replace Ant components directly with shadcn equivalents; don't wrap Ant in compatibility layers.
+- **shadcn-first sourcing**: Install via `npx shadcn@latest` or shadcn MCP; don't hand-roll if a registry component exists.
+- **Side-by-side migration**: Keep Ant only where not yet migrated; scaffold fresh App Router layouts per route.
+- **Reuse vs scaffold**: Reuse existing structure if routes/styles are centralized and scoped. Fresh scaffold if Ant CSS bleeds globally or routing is unclear. Run scans first to decide.
